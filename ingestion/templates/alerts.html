@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Alerts</title>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #eef2f3;
+      margin: 0;
+    }
+
+    .navbar {
+      background: #0d6efd;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .navbar button {
+      background: white;
+      color: #0d6efd;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 40px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 40px;
+    }
+
+    input, select {
+      padding: 10px;
+      margin: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    button.submit {
+      padding: 10px 16px;
+      background: #0d6efd;
+      border: none;
+      color: white;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      padding: 6px 10px;
+      background: #198754;
+      border: none;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 5px;
+    }
+
+    button.toggle {
+      padding: 6px 10px;
+      background: #ffc107;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 5px;
+    }
+
+    button.delete-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+  <h1>🚨 Manage Alerts</h1>
+  <button onclick="window.location.href='/'">🏠 Back</button>
+</div>
+
+<div class="container">
+
+  <!-- CREATE ALERT -->
+  <div class="card">
+    <h2>⚙️ Configure New Alert</h2>
+
+    <input id="alertName" placeholder="Alert Name" />
+    <input id="alertEmails" placeholder="Emails (comma-separated)" />
+
+    <br>
+
+    <select id="alertService">
+      <option value="">Service (Any)</option>
+      <option value="auth">auth</option>
+      <option value="payment">payment</option>
+      <option value="inventory">inventory</option>
+      <option value="notifications">notifications</option>
+    </select>
+
+    <select id="alertLevel">
+      <option value="">Log Level (Any)</option>
+      <option value="INFO">INFO</option>
+      <option value="WARNING">WARNING</option>
+      <option value="ERROR">ERROR</option>
+      <option value="DEBUG">DEBUG</option>
+    </select>
+
+    <input id="alertMessage" placeholder="Message contains (optional)" />
+
+    <br><br>
+    <button class="submit" onclick="createAlert()">Create Alert</button>
+  </div>
+
+  <!-- ACTIVE ALERTS -->
+  <div class="card">
+    <h2>📋 Active Alerts</h2>
+    <button class="submit" onclick="loadAlerts()">🔄 Refresh</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Service</th>
+          <th>Level</th>
+          <th>Message</th>
+          <th>Emails</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="alertBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+const API_BASE = "/api/alerts/api/";
+
+// ---------- CREATE ----------
+async function createAlert() {
+  if (!alertName.value || !alertEmails.value) {
+    alert("Alert name & emails required");
+    return;
+  }
+
+  await fetch(API_BASE, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: alertName.value,
+      service: alertService.value || null,
+      log_level: alertLevel.value || null,
+      message_contains: alertMessage.value || null,
+      email_recipients: alertEmails.value,
+      is_active: true
+    })
+  });
+
+  alertName.value = "";
+  alertEmails.value = "";
+  alertMessage.value = "";
+
+  loadAlerts();
+}
+
+// ---------- LOAD ----------
+async function loadAlerts() {
+  const res = await fetch(API_BASE);
+  const data = await res.json();
+  const alerts = Array.isArray(data) ? data : data.results;
+
+  const tbody = document.getElementById("alertBody");
+  tbody.innerHTML = "";
+
+  alerts.forEach((a, i) => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${a.name}</td>
+        <td>${a.service || "Any"}</td>
+        <td>${a.log_level || "Any"}</td>
+        <td>${a.message_contains || "Any"}</td>
+        <td>${a.email_recipients}</td>
+        <td style="color:${a.is_active ? "green" : "red"}">
+          ${a.is_active ? "Active" : "Inactive"}
+        </td>
+        <td>
+          <button class="secondary" onclick="testEmail(${a.id})">Test</button>
+          <button class="toggle" onclick="toggleAlert(${a.id}, ${!a.is_active})">
+            ${a.is_active ? "Deactivate" : "Activate"}
+          </button>
+          <button class="delete-btn" onclick="deleteAlert(${a.id})">
+            Delete
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+// ---------- TEST EMAIL ----------
+async function testEmail(id) {
+  try {
+    const res = await fetch(`/api/test-alert-email/${id}/`);
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Server error:", text);
+      alert("❌ Email failed. Check console.");
+      return;
+    }
+
+    const data = await res.json();
+    alert("📧 Test email sent successfully!");
+  } catch (err) {
+    console.error("Fetch error:", err);
+    alert("❌ Network / Server error");
+  }
+}
+
+// ---------- TOGGLE ----------
+async function toggleAlert(id, status) {
+  await fetch(API_BASE + id + "/", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ is_active: status })
+  });
+  loadAlerts();
+}
+
+// ---------- DELETE ----------
+async function deleteAlert(id) {
+  if (!confirm("Delete this alert?")) return;
+  await fetch(API_BASE + id + "/", { method: "DELETE" });
+  loadAlerts();
+}
+
+window.onload = loadAlerts;
+</script>
+
+</body>
+</html>

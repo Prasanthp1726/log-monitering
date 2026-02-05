@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome to Log Monitoring</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0f2fe, #f1f5f9);
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: #1e3a8a;
+      color: white;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .navbar h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 16px;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+
+    .nav-links a:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .main h2 {
+      font-size: 36px;
+      color: #1e3a8a;
+      margin-bottom: 10px;
+    }
+
+    .main p {
+      font-size: 18px;
+      color: #475569;
+      margin-bottom: 40px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .nav-buttons a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 500;
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, background 0.3s ease;
+    }
+
+    .nav-buttons a:hover {
+      transform: translateY(-3px);
+    }
+
+    .dashboard { background: #198754; }
+    .dashboard:hover { background: #146c43; }
+
+    .sendlog, .filter, .alerts, .admin {
+      background: #0d6efd;
+    }
+
+    .sendlog:hover, .filter:hover, .alerts:hover, .admin:hover {
+      background: #0b5ed7;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <div class="navbar">
+    <h1>🛠️ Log Monitoring</h1>
+    <div class="nav-links">
+      <a href="/dashboard/">📊 Dashboard</a>
+      <a href="/api/form/">📝 Send Log</a>
+      <a href="/api/filter/">🔍 Filter Logs</a>
+      <a href="/api/alerts/">🚨 Alerts</a>
+      <a href="/admin/">🔐 Admin</a>
+    </div>
+  </div>
+
+  <!-- Main Welcome Section -->
+  <div class="main">
+    <h2>🚀 Log Monitoring API is Running</h2>
+    <p>Welcome! Choose an action below to get started:</p>
+  </div>
+
+</body>
+</html>

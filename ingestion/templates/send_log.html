@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Send Log</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #eef2f3;
+      margin: 0;
+      padding: 0;
+    }
+
+    .navbar {
+      background: #007bff;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .navbar button {
+      background: white;
+      color: #007bff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 40px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    button.submit {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
+      background: #007bff;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button.submit:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <h1>📡 Send Log</h1>
+    <button onclick="window.location.href='/api/'">🏠 Back to Home</button>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <form id="logForm">
+        <label for="timestamp">Timestamp</label>
+        <input type="text" id="timestamp" required>
+
+        <label for="service">Service</label>
+        <select id="service" required>
+          <option value="">-- Select Service --</option>
+          <option value="auth">auth</option>
+          <option value="payment">payment</option>
+          <option value="inventory">inventory</option>
+          <option value="notifications">notifications</option>
+        </select>
+
+        <label for="log_level">Log Level</label>
+        <select id="log_level" required>
+          <option value="">-- Select Level --</option>
+          <option value="INFO">INFO</option>
+          <option value="WARNING">WARNING</option>
+          <option value="ERROR">ERROR</option>
+          <option value="DEBUG">DEBUG</option>
+        </select>
+
+        <label for="message">Message</label>
+        <select id="message" required>
+          <option value="">-- Select Message --</option>
+          <option value="User login successful">User login successful</option>
+          <option value="Payment failed">Payment failed</option>
+          <option value="Item out of stock">Item out of stock</option>
+          <option value="Email sent">Email sent</option>
+        </select>
+
+        <button type="submit" class="submit">Send Log</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function setCurrentTimestamp() {
+      const now = new Date();
+      const offsetMs = 5.5 * 60 * 60 * 1000; // IST offset
+      const istTime = new Date(now.getTime() + offsetMs);
+      const isoString = istTime.toISOString().slice(0, 19) + "Z";
+      document.getElementById("timestamp").value = isoString;
+    }
+
+    document.getElementById("logForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const logData = {
+        timestamp: document.getElementById("timestamp").value,
+        service: document.getElementById("service").value,
+        log_level: document.getElementById("log_level").value,
+        message: document.getElementById("message").value
+      };
+      try {
+        const response = await fetch("/api/logs/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(logData)
+        });
+        if (!response.ok) throw new Error(await response.text());
+        alert("✅ Log saved successfully");
+        document.getElementById("logForm").reset();
+        setCurrentTimestamp();
+      } catch (error) {
+        alert("❌ ERROR:\n" + error.message);
+      }
+    });
+
+    window.onload = setCurrentTimestamp;
+  </script>
+
+</body>
+</html>

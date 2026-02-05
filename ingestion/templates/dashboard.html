@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Log Monitoring Dashboard</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f1f5f9;
+      margin: 0;
+      padding: 0;
+      color: #1f2937;
+    }
+    .topbar {
+      background: linear-gradient(90deg, #2563eb, #1e40af);
+      color: white;
+      padding: 16px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .topbar a {
+      color: white;
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: bold;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+    }
+    .topbar a:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    .wrapper {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .welcome {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .stat {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .stat span {
+      font-size: 14px;
+      color: #64748b;
+    }
+    .stat h3 {
+      font-size: 28px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>📊 Log Monitoring Dashboard</h1>
+  <div>
+    <a href="/">🏠 Home</a>
+    <a href="/swagger/" target="_blank">📘 Swagger Docs</a>
+    <a href="/redoc/" target="_blank">📙 Redoc Docs</a>
+  </div>
+</div>
+
+<div class="wrapper">
+  <div class="stats">
+    <div class="stat">
+      <span>Total Logs</span>
+      <h3 id="total_logs">{{ total_logs }}</h3>
+    </div>
+    <div class="stat">
+      <span>Error Logs</span>
+      <h3 id="error_logs">{{ error_logs }}</h3>
+    </div>
+    <div class="stat">
+      <span>Active Alerts</span>
+      <h3 id="active_alerts">{{ active_alerts }}</h3>
+    </div>
+    <div class="stat">
+      <span>System Status</span>
+      <h3 id="system_status">{{ system_status }}</h3>
+    </div>
+  </div>
+</div>
+
+<script>
+  async function loadDashboardStats() {
+    try {
+      const res = await fetch("/api/dashboard-data/");
+      if (!res.ok) throw new Error("Failed to fetch dashboard data");
+      const data = await res.json();
+
+      document.getElementById("total_logs").textContent = data.total_logs;
+      document.getElementById("error_logs").textContent = data.error_logs;
+      document.getElementById("active_alerts").textContent = data.active_alerts;
+      document.getElementById("system_status").textContent = data.system_status;
+    } catch (err) {
+      console.error("Dashboard API error:", err);
+    }
+  }
+
+  window.onload = loadDashboardStats;
+</script>
+
+</body>
+</html>

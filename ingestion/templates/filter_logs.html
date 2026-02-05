@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Filter Logs</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #eef2f3;
+      margin: 0;
+      padding: 0;
+    }
+
+    .navbar {
+      background: #007bff;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .navbar button {
+      background: white;
+      color: #007bff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .navbar .nav-links {
+      display: flex;
+      gap: 10px;
+    }
+
+    .container {
+      padding: 40px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    select, input[type="date"] {
+      padding: 10px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    button.submit {
+      padding: 12px;
+      background: #007bff;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button.submit:hover {
+      background: #0056b3;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    #pagination {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    #pagination button {
+      margin: 5px;
+      padding: 8px 16px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #pagination button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <h1>🔍 Filter Logs</h1>
+    <div class="nav-links">
+      <button onclick="window.location.href='/api/alerts/'">🚨 Manage Alerts</button>
+      <button onclick="window.location.href='/api/'">🏠 Back to Home</button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Filter Section -->
+    <div class="card">
+      <h2>🔍 Filter Logs</h2>
+      <select id="filterService">
+        <option value="">Service</option>
+        <option value="auth">auth</option>
+        <option value="payment">payment</option>
+        <option value="inventory">inventory</option>
+        <option value="notifications">notifications</option>
+      </select>
+
+      <select id="filterLevel">
+        <option value="">Log Level</option>
+        <option value="INFO">INFO</option>
+        <option value="WARNING">WARNING</option>
+        <option value="ERROR">ERROR</option>
+        <option value="DEBUG">DEBUG</option>
+      </select>
+
+      <select id="filterMessage">
+        <option value="">Message</option>
+        <option value="User login successful">User login successful</option>
+        <option value="Payment failed">Payment failed</option>
+        <option value="Item out of stock">Item out of stock</option>
+        <option value="Email sent">Email sent</option>
+      </select>
+
+      <input type="date" id="filterStartDate">
+      <input type="date" id="filterEndDate">
+      <button onclick="loadLogs(1)" class="submit">Filter</button>
+      <button onclick="detectAnomalies()" class="submit" style="background: #28a745;">🔍 Detect Anomalies</button>
+    </div>
+
+    <!-- Submitted Logs Section -->
+    <div class="card">
+      <h2>📋 Submitted Logs</h2>
+      <table id="logTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Timestamp</th>
+            <th>Service</th>
+            <th>Log Level</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="pagination"></div>
+    </div>
+
+  </div>
+
+  <script>
+    async function loadLogs(page = 1) {
+      if (typeof page !== "number") page = 1;
+      try {
+        let url = `/api/logs/view/?page=${page}`;
+        const service = document.getElementById("filterService").value;
+        const level = document.getElementById("filterLevel").value;
+        const message = document.getElementById("filterMessage").value;
+        const startDate = document.getElementById("filterStartDate").value;
+        const endDate = document.getElementById("filterEndDate").value;
+
+        const params = [];
+        if (service) params.push("service=" + encodeURIComponent(service));
+        if (level) params.push("log_level=" + encodeURIComponent(level));
+        if (message) params.push("message=" + encodeURIComponent(message));
+        if (startDate && endDate) params.push("start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate));
+        if (params.length) url += "&" + params.join("&");
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(await response.text());
+        const data = await response.json();
+
+        const tbody = document.querySelector("#logTable tbody");
+        tbody.innerHTML = "";
+        data.results.forEach((log, index) => {
+          const counter = index + 1;
+          const row = '<tr data-id="' + log.id + '">' +
+            '<td>' + counter + '</td>' +
+            '<td>' + log.timestamp + '</td>' +
+            '<td>' + log.service + '</td>' +
+            '<td>' + log.log_level + '</td>' +
+            '<td>' + log.message + '</td>' +
+            '</tr>';
+          tbody.innerHTML += row;
+        });
+
+        const paginationDiv = document.getElementById("pagination");
+        paginationDiv.innerHTML = "";
+        if (data.previous) {
+          paginationDiv.innerHTML += `<button onclick="loadLogs(${page - 1})">⬅ Prev</button>`;
+        }
+        if (data.next) {
+          paginationDiv.innerHTML += `<button onclick="loadLogs(${page + 1})">Next ➡</button>`;
+        }
+      } catch (error) {
+        alert("❌ ERROR:\n" + error.message);
+      }
+    }
+
+    async function detectAnomalies() {
+      try {
+        let url = '/api/logs/anomalies/';
+        const service = document.getElementById("filterService").value;
+        const level = document.getElementById("filterLevel").value;
+        const message = document.getElementById("filterMessage").value;
+        const startDate = document.getElementById("filterStartDate").value;
+        const endDate = document.getElementById("filterEndDate").value;
+
+        const params = [];
+        if (service) params.push("service=" + encodeURIComponent(service));
+        if (level) params.push("log_level=" + encodeURIComponent(level));
+        if (message) params.push("message=" + encodeURIComponent(message));
+        if (startDate && endDate) params.push("start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate));
+        if (params.length) url += "?" + params.join("&");
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(await response.text());
+        const data = await response.json();
+
+        const tbody = document.querySelector("#logTable tbody");
+        const rows = tbody.querySelectorAll("tr");
+        rows.forEach(row => {
+          row.style.backgroundColor = "";
+          row.style.border = "";
+        });
+
+        data.anomalies.forEach(anomaly => {
+          const row = [...rows].find(r => r.getAttribute('data-id') == anomaly);
+          if (row) {
+            row.style.backgroundColor = "#ffcccc";
+            row.style.border = "2px solid red";
+          }
+        });
+
+        alert("Anomalies detected: " + data.anomalies.join(", ") + " and highlighted in red!");
+      } catch (error) {
+        alert("❌ ERROR detecting anomalies:\n" + error.message);
+      }
+    }
+
+    window.onload = loadLogs;
+  </script>
+
+</body>
+</html>
