@@ -34,7 +34,7 @@
   <line x1="500" y1="100" x2="700" y2="140" stroke="#343a40" stroke-width="2" marker-end="url(#arrow)"/>
 
   <!-- Notes -->
-  <text class="text" x="300" y="110" text-anchor="middle">Validate & normalize logs</text>
+  <text class="text" x="300" y="110" text-anchor="middle">Validate &amp; normalize logs</text>
   <text class="text" x="760" y="200" text-anchor="middle">Send emails / notifications</text>
 
 </svg>
