@@ -16,7 +16,6 @@ import json
 
 from .models import LogEntry, Alert
 from .serializers import LogEntrySerializer, AlertSerializer
-from .ml_utils import detect_anomalies
 from django.shortcuts import render
 from ingestion.models import LogEntry
 
@@ -106,6 +105,7 @@ def anomaly_detection_view(request):
         if message:
             queryset = queryset.filter(message__icontains=message)
 
+        from .ml_utils import detect_anomalies
         anomalies = detect_anomalies(queryset)
         return JsonResponse({"anomalies": anomalies})
 

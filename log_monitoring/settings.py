@@ -86,15 +86,10 @@ import os
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME", "logdb"),
-        "USER": os.getenv("DB_USER", "loguser"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "logpass"),
-        'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
-        "PORT": os.getenv("DB_PORT", "5432"),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-
 
 # =========================
 # LANGUAGE & TIME

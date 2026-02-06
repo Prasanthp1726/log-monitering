@@ -1,11 +1,9 @@
 Django==5.2.10
-psycopg2-binary==2.9.9
 djangorestframework==3.14.0
+django-filter==25.2
+
 celery==5.3.6
 redis==5.0.1
-numpy==1.26.4
-scikit-learn==1.4.0
-django-filter==25.2
-pandas==2.2.0
-python-dotenv
-drf-yasg
+
+python-dotenv==1.0.1
+drf-yasg==1.21.7
